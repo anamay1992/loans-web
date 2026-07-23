@@ -78,8 +78,6 @@ export class RequestComponent implements OnInit {
       originalMonths: this.originalMonths()
     };
 
-    console.log('Enviando pacto al backend:', payload);
-
     this.loanService.createLoan(payload).subscribe({
       next: () => {
         this.toast.show('Pacto de sangre forjado con éxito.', 'success');
