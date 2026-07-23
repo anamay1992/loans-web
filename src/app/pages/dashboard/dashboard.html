@@ -44,10 +44,10 @@
     <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 sm:mb-8 bg-[#12071f]/80 backdrop-blur-md p-6 rounded-2xl border-2 border-red-900/60 shadow-2xl">
       <div>
         <div class="flex items-center gap-2 mb-1">
-          <span class="text-xs uppercase tracking-widest text-red-400 font-bold">🦇 CASTLE KEEP • RENDER SERVER</span>
+          <span class="text-xs uppercase tracking-widest text-red-400 font-bold">🦇 CASTLE KEEP</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-black text-red-500 tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(239,68,68,0.4)]">Panel de Préstamos</h1>
-        <p class="text-purple-300/70 mt-1 text-xs sm:text-sm">Información en tiempo real desde la cripta</p>
+        <h1 class="text-2xl sm:text-3xl font-black text-red-500 tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(239,68,68,0.4)]">Panel de Pactos</h1>
+        <p class="text-purple-300/70 mt-1 text-xs sm:text-sm">Información desde la cripta</p>
       </div>
       
       <!-- BOTONERA UNIFICADA CON ESTILO DEGRADADO COhesIVO -->
@@ -77,12 +77,12 @@
         <table class="w-full text-left border-collapse text-xs sm:text-sm whitespace-nowrap">
           <thead>
             <tr class="bg-[#1b0a2e] text-red-400 uppercase font-black tracking-wider border-b-2 border-red-900/80 text-xs">
-              <th class="p-4 border-b border-red-900/40">ID</th>
+              <!-- ID Ocultado visualmente -->
               <th class="p-4 border-b border-red-900/40">Alma</th>
               <th class="p-4 border-b border-red-900/40">Capital</th>
               <th class="p-4 border-b border-red-900/40">Tasa</th>
               <th class="p-4 border-b border-red-900/40">Plazo</th>
-              <th class="p-4 border-b border-red-900/40">Fechas (Inicio - Fin)</th>
+              <th class="p-4 border-b border-red-900/40">Fechas</th>
               <th class="p-4 border-b border-red-900/40">Sistema</th>
               <th class="p-4 border-b border-red-900/40">Total Ganado</th>
               <th class="p-4 border-b border-red-900/40 text-center">Estado</th>
@@ -92,7 +92,7 @@
           <tbody class="divide-y divide-red-950/50">
             @for (loan of loans(); track loan.id) {
               <tr class="hover:bg-purple-950/30 transition-colors group">
-                <td class="p-4 text-purple-300 font-bold">{{ loan.id }}</td>
+                <!-- ID oculto visualmente, pero loan.id sigue viajando en las funciones -->
                 
                 <!-- DATO DEL CLIENTE -->
                 <td class="p-4 font-bold text-slate-200">
@@ -131,7 +131,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="10" class="p-12 text-center text-purple-300/60">
+                <td colspan="9" class="p-12 text-center text-purple-300/60">
                   <div class="animate-pulse flex flex-col items-center space-y-2">
                     <span class="text-2xl">🦇</span>
                     <p>Buscando registros en las catacumbas del servidor...</p>
@@ -231,7 +231,7 @@
           </button>
         </div>
 
-        <!-- SUB-MODAL DE CONFIRMACIÓN DE PAGO CORREGIDO Y CON SUGERENCIA DE LIQUIDACIÓN TOTAL -->
+        <!-- SUB-MODAL DE CONFIRMACIÓN DE PAGO -->
         @if (showPaymentModal()) {
           <div class="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 z-[60]">
             <div class="bg-[#180929] border-2 border-amber-600/80 rounded-2xl p-6 w-full max-w-md shadow-2xl text-slate-100 max-h-[95vh] overflow-y-auto">
@@ -248,7 +248,7 @@
                   <div>Interés Exacto: <span class="text-purple-300 font-bold">S/. {{ inst.interest | number:'1.2-2' }}</span></div>
                 </div>
 
-                <!-- 🦇 SUGERENCIA DE LIQUIDACIÓN TOTAL (Si tiene saldo restante) -->
+                <!-- 🦇 SUGERENCIA DE LIQUIDACIÓN TOTAL -->
                 @if (inst.balance > 0) {
                   <div class="mb-4 bg-amber-950/30 p-3 rounded-xl border border-amber-600/40 text-xs space-y-1.5">
                     <div class="flex justify-between items-center">

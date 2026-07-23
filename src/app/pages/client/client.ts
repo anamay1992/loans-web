@@ -36,7 +36,7 @@ export class ClientsComponent implements OnInit {
     this.isLoading.set(true);
     this.loanService.getClients().subscribe({
       next: (data) => {
-        // Ordenamos alfabéticamente
+        // Ordenamos estrictamente alfabéticamente por Nombre Completo (A - Z)
         const ordenados = data.sort((a, b) => a.fullName.localeCompare(b.fullName));
         this.clients.set(ordenados);
         this.isLoading.set(false);
