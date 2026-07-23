@@ -39,7 +39,14 @@ export class Dashboard implements OnInit {
   cargarDatos() {
     this.loanService.getLoans().subscribe({
       next: (datosQueLlegan) => {
-        this.loans.set(datosQueLlegan);
+        const prestamosOrdenados = datosQueLlegan.sort((a, b) => {
+          const fechaA = new Date(a.startDate).getTime();
+          const fechaB = new Date(b.startDate).getTime();
+          
+          return fechaA - fechaB;
+        });
+
+        this.loans.set(prestamosOrdenados);
       },
       error: (error) => {
         console.error('Error al obtener los préstamos:', error);
