@@ -41,10 +41,11 @@ export interface Client {
 
 export interface CreateLoanRequest {
   clientId: number | null;
+  startDate: string;             // ← Agregado
   capital: number | null;
+  systemType: string;            // ← Agregado
   rate: number;
-  installments: number | null;
-  paymentFrequency: string;
+  originalMonths: number | null; // ← Agregado
 }
 
 export interface UpdateClientRequest {
