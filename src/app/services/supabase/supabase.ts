@@ -25,7 +25,7 @@ export class Supabase {
     const { data, error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'http://localhost:4200/inicio' 
+        redirectTo: `${window.location.origin}/inicio` // <-- Dinámico para local y Vercel
       }
     });
     
