@@ -13,6 +13,7 @@ export class Supabase {
   private isSessionLoaded = false;
 
   constructor() {
+    console.log('Variables de entorno cargadas:', environment);
     this.supabase = createClient(environment.authUrl, environment.authKey);
 
     this.supabase.auth.onAuthStateChange((event, session) => {
