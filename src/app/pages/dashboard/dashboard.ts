@@ -81,11 +81,12 @@ export class Dashboard implements OnInit {
   cargarDatos() {
     this.loanService.getLoans().subscribe({
       next: (datosQueLlegan) => {
-        // Ordenados estrictamente alfabéticamente por Nombre del Cliente (A - Z)
+        // 🦇 Ordenados por fecha de inicio (startDate) del más antiguo al más reciente
         const prestamosOrdenados = datosQueLlegan.sort((a, b) => {
-          const nombreA = (a.clientName || '').toLowerCase();
-          const nombreB = (b.clientName || '').toLowerCase();
-          return nombreA.localeCompare(nombreB);
+          const fechaA = new Date(a.startDate).getTime();
+          const fechaB = new Date(b.startDate).getTime();
+          
+          return fechaA - fechaB; // Si prefieres del más reciente al más antiguo, cambia a: fechaB - fechaA
         });
 
         this.loans.set(prestamosOrdenados);
