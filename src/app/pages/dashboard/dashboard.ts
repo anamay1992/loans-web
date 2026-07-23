@@ -25,6 +25,10 @@ export class Dashboard implements OnInit {
   searchQuery = signal<string>('');
   selectedStatusFilter = signal<string>('ALL'); // 'ALL', 'ACTIVE', 'SETTLED'
 
+  // 🦇 SEÑALES DE PAGINACIÓN
+  currentPage = signal<number>(1);
+  pageSize = 6; // Máximo 6 pactos por página
+
   // 🦇 SEÑAL COMPUTADA QUE FILTRA POR NOMBRE Y ESTADO EN TIEMPO REAL
   loansFiltrados = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
@@ -32,15 +36,31 @@ export class Dashboard implements OnInit {
     const lista = this.loans();
     
     return lista.filter(loan => {
-      // 1. Filtro por Nombre
       const nombre = (loan.clientName || 'Alma Anónima').toLowerCase();
       const coincideNombre = nombre.includes(query);
-
-      // 2. Filtro por Estado
       const coincideEstado = statusFilter === 'ALL' || loan.status === statusFilter;
-
       return coincideNombre && coincideEstado;
     });
+  });
+
+  // 🦇 TOTAL DE PÁGINAS CALCULADAS AUTOMÁTICAMENTE
+  totalPages = computed(() => {
+    const total = this.loansFiltrados().length;
+    return Math.ceil(total / this.pageSize) || 1;
+  });
+
+  // 🦇 ARRAY DE NÚMEROS DE PÁGINA PARA LOS BOTONES
+  pagesArray = computed(() => {
+    const total = this.totalPages();
+    return Array.from({ length: total }, (_, i) => i + 1);
+  });
+
+  // 🦇 CORTE DE REGISTROS SEGÚN LA PÁGINA ACTUAL (MÁXIMO 6)
+  loansPaginados = computed(() => {
+    const lista = this.loansFiltrados();
+    const page = this.currentPage();
+    const start = (page - 1) * this.pageSize;
+    return lista.slice(start, start + this.pageSize);
   });
 
   selectedLoanId = signal<number | null>(null);
@@ -75,6 +95,33 @@ export class Dashboard implements OnInit {
         this.toast.show('Las fuerzas oscuras ocultaron los registros.', 'error');
       }
     });
+  }
+
+  // Métodos para resetear la página a 1 cuando el usuario busca o filtra
+  onSearchInput(event: Event) {
+    const val = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(val);
+    this.currentPage.set(1);
+  }
+
+  onStatusChange(event: Event) {
+    const val = (event.target as HTMLSelectElement).value;
+    this.selectedStatusFilter.set(val);
+    this.currentPage.set(1);
+  }
+
+  // Métodos de navegación de páginas
+  cambiarPagina(delta: number) {
+    const nuevaPagina = this.currentPage() + delta;
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPages()) {
+      this.currentPage.set(nuevaPagina);
+    }
+  }
+
+  irAPagina(pagina: number) {
+    if (pagina >= 1 && pagina <= this.totalPages()) {
+      this.currentPage.set(pagina);
+    }
   }
 
   verCuotas(loanId: number) {
@@ -115,7 +162,6 @@ export class Dashboard implements OnInit {
     this.selectedInstallment.set(null);
   }
 
-  // 🦇 MÉTODO PARA AUTO-LLENAR LA LIQUIDACIÓN TOTAL
   aplicarLiquidacionTotal(inst: Installment) {
     const montoTotalLiquidacion = inst.amount + inst.balance;
     this.amountPaidInput.set(Number(montoTotalLiquidacion.toFixed(2)));

@@ -71,42 +71,50 @@
       </div>
     </div>
 
-    <!-- 🦇 BARRAS DE FILTROS VISUALES (BÚSQUEDA + ESTADO) -->
-    <div class="mb-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#12071f]/80 backdrop-blur-md p-4 rounded-2xl border-2 border-red-900/60 shadow-xl">
-      <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+    <!-- 🦇 BARRA DE FILTROS VISUALES OPTIMIZADA -->
+    <div class="mb-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-[#12071f]/80 backdrop-blur-md p-4 rounded-2xl border-2 border-red-900/60 shadow-xl">
+      
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+        
         <!-- Input de búsqueda por nombre -->
         <div class="relative w-full sm:w-80">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-red-400">🔍</span>
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-red-400 text-sm">🔍</span>
           <input type="text" 
                  [value]="searchQuery()" 
-                 (input)="searchQuery.set($any($event.target).value)"
+                 (input)="onSearchInput($event)"
                  placeholder="Buscar pacto por nombre..." 
-                 class="w-full bg-[#0a0312] border border-red-900/80 rounded-xl pl-10 pr-4 py-2.5 text-white font-bold focus:outline-none focus:border-amber-500 transition-colors text-xs placeholder:text-purple-400/50">
+                 class="w-full bg-[#0a0312] border border-red-900/80 rounded-xl pl-10 pr-4 py-2.5 text-white font-bold focus:outline-none focus:border-amber-500 transition-colors text-xs placeholder:text-purple-400/50 shadow-inner">
         </div>
 
         <!-- Selector de filtro por Estado -->
-        <div class="w-full sm:w-auto">
+        <div class="relative w-full sm:w-auto">
           <select [value]="selectedStatusFilter()" 
-                  (change)="selectedStatusFilter.set($any($event.target).value)"
-                  class="w-full sm:w-auto bg-[#0a0312] border border-red-900/80 rounded-xl px-4 py-2.5 text-white font-bold focus:outline-none focus:border-amber-500 transition-colors text-xs cursor-pointer appearance-none">
-            <option value="ALL">TODOS LOS ESTADOS</option>
-            <option value="ACTIVE">EN PROCESO</option>
-            <option value="SETTLED">CANCELADO</option>
+                  (change)="onStatusChange($event)"
+                  class="w-full sm:w-auto bg-[#0a0312] border border-red-900/80 rounded-xl px-4 py-2.5 pr-10 text-amber-400 font-bold focus:outline-none focus:border-amber-500 transition-colors text-xs cursor-pointer appearance-none shadow-inner tracking-wider">
+            <option value="ALL" class="bg-[#12071f] text-slate-300">TODOS LOS ESTADOS</option>
+            <option value="ACTIVE" class="bg-[#12071f] text-amber-300">EN PROCESO</option>
+            <option value="SETTLED" class="bg-[#12071f] text-emerald-300">CANCELADO</option>
           </select>
+          <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-red-400 text-xs">
+            ▼
+          </div>
         </div>
+
       </div>
 
-      <div class="text-xs text-purple-300/70">
-        Mostrando <span class="text-amber-400 font-bold">{{ loansFiltrados().length }}</span> pactos
+      <div class="text-xs text-purple-300/70 text-center lg:text-right px-2">
+        Mostrando <span class="text-amber-400 font-bold">{{ loansFiltrados().length }}</span> pactos en total
       </div>
+
     </div>
 
-    <!-- CONTENEDOR DE LA TABLA -->
-    <div class="bg-[#12071f]/90 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-red-900/60 overflow-hidden">
-      <div class="overflow-x-auto">
+    <!-- CONTENEDOR DE LA TABLA + PAGINACIÓN -->
+    <div class="bg-[#12071f]/90 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-red-900/60 overflow-hidden flex flex-col">
+      <div class="overflow-x-auto flex-1">
         <table class="w-full text-left border-collapse text-xs sm:text-sm whitespace-nowrap">
           <thead>
             <tr class="bg-[#1b0a2e] text-red-400 uppercase font-black tracking-wider border-b-2 border-red-900/80 text-xs">
+              <!-- ID Ocultado visualmente -->
               <th class="p-4 border-b border-red-900/40">Alma</th>
               <th class="p-4 border-b border-red-900/40">Capital</th>
               <th class="p-4 border-b border-red-900/40">Tasa</th>
@@ -119,7 +127,8 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-red-950/50">
-            @for (loan of loansFiltrados(); track loan.id) {
+            <!-- USANDO loansPaginados() (MÁXIMO 6 POR PÁGINA) -->
+            @for (loan of loansPaginados(); track loan.id) {
               <tr class="hover:bg-purple-950/30 transition-colors group">
                 <td class="p-4 font-bold text-slate-200">
                   <div class="flex items-center gap-2">
@@ -168,6 +177,46 @@
           </tbody>
         </table>
       </div>
+
+      <!-- 🦇 PIE DE PAGINACIÓN GÓTICA -->
+      @if (totalPages() > 0) {
+        <div class="p-4 bg-[#1b0a2e] border-t-2 border-red-900/60 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div class="text-xs text-purple-300/70">
+            Página <span class="text-amber-400 font-bold">{{ currentPage() }}</span> de <span class="text-white font-bold">{{ totalPages() }}</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Botón Anterior -->
+            <button (click)="cambiarPagina(-1)" 
+                    [disabled]="currentPage() === 1"
+                    class="bg-red-950 hover:bg-red-900 disabled:opacity-40 disabled:cursor-not-allowed text-red-300 font-bold px-3 py-1.5 rounded-lg text-xs border border-red-800/60 transition-all cursor-pointer">
+              ← Anterior
+            </button>
+
+            <!-- Números de página -->
+            <div class="flex items-center gap-1 px-1">
+              @for (p of pagesArray(); track p) {
+                <button (click)="irAPagina(p)"
+                        [ngClass]="{
+                          'bg-amber-600 text-white border-amber-500 shadow-md': currentPage() === p,
+                          'bg-red-950/60 text-purple-300 hover:bg-red-900 border-red-800/50': currentPage() !== p
+                        }"
+                        class="w-7 h-7 rounded-lg text-xs font-bold border transition-all cursor-pointer flex items-center justify-center">
+                  {{ p }}
+                </button>
+              }
+            </div>
+
+            <!-- Botón Siguiente -->
+            <button (click)="cambiarPagina(1)" 
+                    [disabled]="currentPage() === totalPages()"
+                    class="bg-red-950 hover:bg-red-900 disabled:opacity-40 disabled:cursor-not-allowed text-red-300 font-bold px-3 py-1.5 rounded-lg text-xs border border-red-800/60 transition-all cursor-pointer">
+              Siguiente →
+            </button>
+          </div>
+        </div>
+      }
+
     </div>
 
   </div>
