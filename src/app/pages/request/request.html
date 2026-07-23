@@ -1,0 +1,102 @@
+<style>
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+  .torch-light {
+    background: radial-gradient(circle at 50% 0%, rgba(185, 28, 28, 0.15) 0%, transparent 60%);
+    animation: flicker 4s infinite alternate;
+  }
+</style>
+
+<div class="min-h-screen bg-[#05010a] p-4 sm:p-8 relative font-mono text-slate-100 flex items-center justify-center">
+  <!-- Efecto de luz roja de fondo -->
+  <div class="absolute inset-0 torch-light pointer-events-none"></div>
+
+  <div class="max-w-2xl w-full relative z-10 bg-[#12071f]/90 backdrop-blur-md rounded-2xl border-2 border-red-900/60 shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden">
+    
+    <!-- ENCABEZADO -->
+    <div class="p-6 bg-[#1b0a2e] border-b-2 border-red-900/60 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-black text-red-500 uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(239,68,68,0.4)]">
+          Forjar Nuevo Pacto
+        </h1>
+        <p class="text-purple-300/70 text-xs mt-1 uppercase">Someter una nueva alma a la usura</p>
+      </div>
+      <button routerLink="/inicio" class="text-slate-400 hover:text-white bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-700 uppercase text-xs font-bold transition-colors">
+        ← Cancelar
+      </button>
+    </div>
+
+    <!-- FORMULARIO -->
+    <div class="p-6 sm:p-8 space-y-6">
+      
+      <!-- Selector de Cliente (Alma) -->
+      <div class="space-y-2">
+        <label class="block text-purple-300 font-bold uppercase text-xs tracking-wider">Alma Vinculada (Cliente) *</label>
+        <select [value]="clientId() || ''" (change)="clientId.set(+$any($event.target).value)" 
+                [disabled]="isLoadingClients()"
+                class="w-full bg-[#0a0312] border border-red-900/80 rounded-xl p-3.5 text-white font-bold focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition-all text-sm appearance-none cursor-pointer">
+          <option value="" disabled selected>-- Invocar Alma del Directorio --</option>
+          @for (client of clients(); track client.id) {
+            <option [value]="client.id">{{ client.fullName }} ({{ client.document }})</option>
+          }
+        </select>
+        @if (isLoadingClients()) {
+          <p class="text-xs text-red-400 animate-pulse mt-1">Invocando almas desde el servidor...</p>
+        }
+      </div>
+
+      <!-- Fila de Capital y Tasa -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label class="block text-purple-300 font-bold uppercase text-xs tracking-wider">Capital (S/.) *</label>
+          <input type="number" [value]="capital() || ''" (input)="capital.set(+$any($event.target).value)" 
+                 placeholder="Ej: 1000"
+                 class="w-full bg-[#0a0312] border border-red-900/80 rounded-xl p-3.5 text-white font-bold focus:outline-none focus:border-amber-500 transition-all text-sm">
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-purple-300 font-bold uppercase text-xs tracking-wider">Tasa de Usura (%) *</label>
+          <input type="number" [value]="rate()" (input)="rate.set(+$any($event.target).value)" 
+                 class="w-full bg-[#0a0312] border border-red-900/80 rounded-xl p-3.5 text-amber-400 font-bold focus:outline-none focus:border-amber-500 transition-all text-sm">
+        </div>
+      </div>
+
+      <!-- Fila de Cuotas y Frecuencia -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <label class="block text-purple-300 font-bold uppercase text-xs tracking-wider">Número de Cuotas *</label>
+          <input type="number" [value]="installments() || ''" (input)="installments.set(+$any($event.target).value)" 
+                 placeholder="Ej: 30"
+                 class="w-full bg-[#0a0312] border border-red-900/80 rounded-xl p-3.5 text-white font-bold focus:outline-none focus:border-amber-500 transition-all text-sm">
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-purple-300 font-bold uppercase text-xs tracking-wider">Frecuencia de Cobro *</label>
+          <select [value]="paymentFrequency()" (change)="paymentFrequency.set($any($event.target).value)" 
+                  class="w-full bg-[#0a0312] border border-red-900/80 rounded-xl p-3.5 text-white font-bold focus:outline-none focus:border-amber-500 transition-all text-sm appearance-none cursor-pointer">
+            <option value="DIARIO">Diario</option>
+            <option value="SEMANAL">Semanal</option>
+            <option value="QUINCENAL">Quincenal</option>
+            <option value="MENSUAL">Mensual</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTÓN DE ENVÍO -->
+    <div class="p-6 bg-[#1b0a2e] border-t-2 border-red-900/60">
+      <button (click)="forjarPacto()" [disabled]="isSubmitting() || isLoadingClients()"
+              class="w-full text-center bg-gradient-to-r from-red-900 via-purple-900 to-red-950 hover:from-red-800 hover:to-red-900 text-white font-black py-4 px-6 rounded-xl transition-all shadow-[0_5px_0_#450a0a] active:shadow-[0_0px_0_#450a0a] active:translate-y-[5px] border-2 border-red-500/40 uppercase tracking-widest text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (isSubmitting()) { 
+          <span class="animate-pulse">Sellando Pacto...</span>
+        } @else { 
+          🩸 Sellar Pacto de Sangre 
+        }
+      </button>
+    </div>
+
+  </div>
+</div>

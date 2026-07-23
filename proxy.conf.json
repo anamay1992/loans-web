@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://loans-app-13t4.onrender.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

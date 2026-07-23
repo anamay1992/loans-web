@@ -1,12 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ToastService } from './services/toast/toast';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [RouterOutlet, CommonModule],
+  templateUrl: './app.html'
 })
-export class App {
-  protected readonly title = signal('loans-web');
+export class AppComponent {
+  toastService = inject(ToastService);
 }
