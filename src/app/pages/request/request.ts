@@ -20,10 +20,11 @@ export class RequestComponent implements OnInit {
   isSubmitting = signal<boolean>(false);
 
   clientId = signal<number | null>(null);
+  startDate = signal<string>(new Date().toISOString().split('T')[0]); // Fecha actual por defecto
   capital = signal<number | null>(null);
-  rate = signal<number>(10); // <-- 10% por defecto como solicitaste
-  installments = signal<number | null>(null);
-  paymentFrequency = signal<string>('DIARIO'); // DIARIO, SEMANAL, QUINCENAL, MENSUAL
+  systemType = signal<string>('FRENCH'); // Sistema por defecto
+  rate = signal<number>(10); // 10% por defecto
+  originalMonths = signal<number | null>(null);
 
   ngOnInit() {
     this.cargarClientes();
@@ -49,6 +50,10 @@ export class RequestComponent implements OnInit {
       this.toast.show('Debes seleccionar un alma (cliente) para el pacto.', 'warning');
       return;
     }
+    if (!this.startDate()) {
+      this.toast.show('La fecha del pacto es obligatoria.', 'warning');
+      return;
+    }
     if (!this.capital() || this.capital()! <= 0) {
       this.toast.show('El capital (tributo) debe ser mayor a 0.', 'warning');
       return;
@@ -57,8 +62,8 @@ export class RequestComponent implements OnInit {
       this.toast.show('La tasa de usura no puede ser negativa.', 'warning');
       return;
     }
-    if (!this.installments() || this.installments()! <= 0) {
-      this.toast.show('El número de cuotas debe ser al menos 1.', 'warning');
+    if (!this.originalMonths() || this.originalMonths()! <= 0) {
+      this.toast.show('El número de cuotas (meses) debe ser al menos 1.', 'warning');
       return;
     }
 
@@ -66,11 +71,14 @@ export class RequestComponent implements OnInit {
 
     const payload = {
       clientId: this.clientId(),
+      startDate: this.startDate(),
       capital: this.capital(),
+      systemType: this.systemType(),
       rate: this.rate(),
-      installments: this.installments(),
-      paymentFrequency: this.paymentFrequency()
+      originalMonths: this.originalMonths()
     };
+
+    console.log('Enviando pacto al backend:', payload);
 
     this.loanService.createLoan(payload).subscribe({
       next: () => {
