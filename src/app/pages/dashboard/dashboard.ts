@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common'; 
 import { LoanService, Loan, Installment, PaymentRequest } from '../../services/loan/loan';
@@ -21,6 +21,28 @@ export class Dashboard implements OnInit {
   loans = signal<Loan[]>([]);
   installments = signal<Installment[]>([]);
   
+  // 🦇 SEÑALES PARA LOS FILTROS VISUALES
+  searchQuery = signal<string>('');
+  selectedStatusFilter = signal<string>('ALL'); // 'ALL', 'ACTIVE', 'SETTLED'
+
+  // 🦇 SEÑAL COMPUTADA QUE FILTRA POR NOMBRE Y ESTADO EN TIEMPO REAL
+  loansFiltrados = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    const statusFilter = this.selectedStatusFilter();
+    const lista = this.loans();
+    
+    return lista.filter(loan => {
+      // 1. Filtro por Nombre
+      const nombre = (loan.clientName || 'Alma Anónima').toLowerCase();
+      const coincideNombre = nombre.includes(query);
+
+      // 2. Filtro por Estado
+      const coincideEstado = statusFilter === 'ALL' || loan.status === statusFilter;
+
+      return coincideNombre && coincideEstado;
+    });
+  });
+
   selectedLoanId = signal<number | null>(null);
   showModal = signal<boolean>(false);
   loadingInstallments = signal<boolean>(false);
@@ -39,11 +61,11 @@ export class Dashboard implements OnInit {
   cargarDatos() {
     this.loanService.getLoans().subscribe({
       next: (datosQueLlegan) => {
+        // Ordenados estrictamente alfabéticamente por Nombre del Cliente (A - Z)
         const prestamosOrdenados = datosQueLlegan.sort((a, b) => {
-          const fechaA = new Date(a.startDate).getTime();
-          const fechaB = new Date(b.startDate).getTime();
-          
-          return fechaA - fechaB;
+          const nombreA = (a.clientName || '').toLowerCase();
+          const nombreB = (b.clientName || '').toLowerCase();
+          return nombreA.localeCompare(nombreB);
         });
 
         this.loans.set(prestamosOrdenados);
@@ -95,13 +117,8 @@ export class Dashboard implements OnInit {
 
   // 🦇 MÉTODO PARA AUTO-LLENAR LA LIQUIDACIÓN TOTAL
   aplicarLiquidacionTotal(inst: Installment) {
-    // Suma la cuota actual + el saldo restante del préstamo para cancelarlo todo de golpe
     const montoTotalLiquidacion = inst.amount + inst.balance;
-    
-    // Seteamos el input con el monto calculado y redondeado a 2 decimales
     this.amountPaidInput.set(Number(montoTotalLiquidacion.toFixed(2)));
-    
-    // Forzamos el proceso REGULAR y la estrategia por defecto REDUCIR TIEMPO para liquidar el plazo
     this.processTypeInput.set('REGULAR');
     this.strategyTypeInput.set('REDUCE_TERM');
   }
