@@ -93,6 +93,19 @@ export class Dashboard implements OnInit {
     this.selectedInstallment.set(null);
   }
 
+  // 🦇 MÉTODO PARA AUTO-LLENAR LA LIQUIDACIÓN TOTAL
+  aplicarLiquidacionTotal(inst: Installment) {
+    // Suma la cuota actual + el saldo restante del préstamo para cancelarlo todo de golpe
+    const montoTotalLiquidacion = inst.amount + inst.balance;
+    
+    // Seteamos el input con el monto calculado y redondeado a 2 decimales
+    this.amountPaidInput.set(Number(montoTotalLiquidacion.toFixed(2)));
+    
+    // Forzamos el proceso REGULAR y la estrategia por defecto REDUCIR TIEMPO para liquidar el plazo
+    this.processTypeInput.set('REGULAR');
+    this.strategyTypeInput.set('REDUCE_TERM');
+  }
+
   getLoanStatusText(status: string): string {
     switch (status?.toUpperCase()) {
       case 'ACTIVE': return 'EN PROCESO';

@@ -200,10 +200,10 @@
                       <td class="p-3.5 text-purple-200/80">{{ inst.dueDate }}</td>
                       <td class="p-3.5 text-center">
                         <span class="px-2.5 py-1 rounded-full text-xs font-bold border"
-                              [ngClass]="{
-                                'bg-emerald-950/80 text-emerald-400 border-emerald-700/50': inst.status === 'PAID', 
-                                'bg-amber-950/80 text-amber-400 border-amber-700/50': inst.status !== 'PAID'
-                              }">
+                            [ngClass]="{
+                              'bg-emerald-950/80 text-emerald-400 border-emerald-700/50': inst.status === 'PAID', 
+                              'bg-amber-950/80 text-amber-400 border-amber-700/50': inst.status !== 'PAID'
+                            }">
                           {{ getInstallmentStatusText(inst.status) }}
                         </span>
                       </td>
@@ -231,7 +231,7 @@
           </button>
         </div>
 
-        <!-- SUB-MODAL DE CONFIRMACIÓN DE PAGO CORREGIDO -->
+        <!-- SUB-MODAL DE CONFIRMACIÓN DE PAGO CORREGIDO Y CON SUGERENCIA DE LIQUIDACIÓN TOTAL -->
         @if (showPaymentModal()) {
           <div class="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 z-[60]">
             <div class="bg-[#180929] border-2 border-amber-600/80 rounded-2xl p-6 w-full max-w-md shadow-2xl text-slate-100 max-h-[95vh] overflow-y-auto">
@@ -247,6 +247,23 @@
                   <div>Monto Total Sugerido: <span class="text-white font-bold">S/. {{ inst.amount | number:'1.2-2' }}</span></div>
                   <div>Interés Exacto: <span class="text-purple-300 font-bold">S/. {{ inst.interest | number:'1.2-2' }}</span></div>
                 </div>
+
+                <!-- 🦇 SUGERENCIA DE LIQUIDACIÓN TOTAL (Si tiene saldo restante) -->
+                @if (inst.balance > 0) {
+                  <div class="mb-4 bg-amber-950/30 p-3 rounded-xl border border-amber-600/40 text-xs space-y-1.5">
+                    <div class="flex justify-between items-center">
+                      <span class="text-amber-300 font-bold">🦇 ¿Liquidar todo el préstamo?</span>
+                      <button (click)="aplicarLiquidacionTotal(inst)" 
+                              class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider transition-all cursor-pointer shadow-sm">
+                        Auto-llenar 🪙
+                      </button>
+                    </div>
+                    <p class="text-purple-200/80">
+                      Para pagar la cuota actual y cancelar todo el saldo pendiente, sugerido: 
+                      <span class="text-white font-bold">S/. {{ (inst.amount + inst.balance) | number:'1.2-2' }}</span>
+                    </p>
+                  </div>
+                }
               }
 
               <div class="space-y-4 text-xs sm:text-sm">
